@@ -46,12 +46,18 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             _trace = _hostContext.GetTrace(nameof(Variables));
             ArgUtil.NotNull(hostContext, nameof(hostContext));
 
-            // Validate the dictionary.
+            // Validate the dictionary, rmeove any variable with empty variable name.
             ArgUtil.NotNull(copy, nameof(copy));
-            foreach (string variableName in copy.Keys)
+            int emptyName = 0;
+            foreach (string variableName in copy.Keys.ToList())
             {
-                ArgUtil.NotNullOrEmpty(variableName, nameof(variableName));
+                if (variableName.Trim().Length == 0)
+                {
+                    emptyName++;
+                    copy.Remove(variableName);
+                }
             }
+            _trace.Info($"Removed {emptyName} variables with empty variable name.");
 
             // Filter/validate the mask hints.
             ArgUtil.NotNull(maskHints, nameof(maskHints));
